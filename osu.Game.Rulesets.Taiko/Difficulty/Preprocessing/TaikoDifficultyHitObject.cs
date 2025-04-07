@@ -57,6 +57,11 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing
         public double EffectiveBPM;
 
         /// <summary>
+        /// If the current object is kat, if false, it is a don.
+        /// </summary>
+        public bool IsKat { get; }
+
+        /// <summary>
         /// Creates a new difficulty hit object.
         /// </summary>
         /// <param name="hitObject">The gameplay <see cref="HitObject"/> associated with this difficulty object.</param>
@@ -88,12 +93,14 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing
                 switch (hit.Type)
                 {
                     case HitType.Centre:
+                        IsKat = false;
                         MonoIndex = centreHitObjects.Count;
                         centreHitObjects.Add(this);
                         monoDifficultyHitObjects = centreHitObjects;
                         break;
 
                     case HitType.Rim:
+                        IsKat = true;
                         MonoIndex = rimHitObjects.Count;
                         rimHitObjects.Add(this);
                         monoDifficultyHitObjects = rimHitObjects;
