@@ -89,6 +89,12 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
                 ));
             }
 
+            HitWindows hitWindows = new TaikoHitWindows();
+            hitWindows.SetDifficulty(beatmap.Difficulty.OverallDifficulty);
+            PatternInterpreter interpreter = new PatternInterpreter(noteObjects, hitWindows.WindowFor(HitResult.Great) / clockRate * 2);
+
+            PatternDebugUtils.PrintPatterns(interpreter, noteObjects);
+
             TaikoColourDifficultyPreprocessor.ProcessAndAssign(difficultyHitObjects);
             TaikoRhythmDifficultyPreprocessor.ProcessAndAssign(noteObjects);
 
