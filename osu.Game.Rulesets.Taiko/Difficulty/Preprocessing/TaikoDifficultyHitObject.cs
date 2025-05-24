@@ -43,7 +43,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing
         /// Rhythm data used by <see cref="RhythmEvaluator"/>.
         /// This is populated via <see cref="TaikoRhythmDifficultyPreprocessor"/>.
         /// </summary>
-        public readonly TaikoRhythmData RhythmData;
+        public TaikoRhythmData RhythmData;
 
         /// <summary>
         /// Colour data used by <see cref="ColourEvaluator"/> and <see cref="StaminaEvaluator"/>.
@@ -123,6 +123,55 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing
             EffectiveBPM = currentControlPoint.BPM * currentSliderVelocity;
         }
 
+        public TaikoDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate,
+                                        List<DifficultyHitObject> objects,
+                                        List<TaikoDifficultyHitObject> centreHitObjects,
+                                        List<TaikoDifficultyHitObject> rimHitObjects,
+                                        List<TaikoDifficultyHitObject> noteObjects, int index,
+                                        ControlPointInfo controlPointInfo,
+                                        double globalSliderVelocity, double deltaTime)
+            : base(hitObject, lastObject, clockRate, objects, index, deltaTime)
+        {
+            noteDifficultyHitObjects = noteObjects;
+
+            ColourData = new TaikoColourData();
+            RhythmData = new TaikoRhythmData(this);
+
+            if (hitObject is Hit hit)
+            {
+                switch (hit.Type)
+                {
+                    case HitType.Centre:
+                        IsKat = false;
+                        MonoIndex = centreHitObjects.Count;
+                        centreHitObjects.Add(this);
+                        monoDifficultyHitObjects = centreHitObjects;
+                        break;
+
+                    case HitType.Rim:
+                        IsKat = true;
+                        MonoIndex = rimHitObjects.Count;
+                        rimHitObjects.Add(this);
+                        monoDifficultyHitObjects = rimHitObjects;
+                        break;
+                }
+
+                NoteIndex = noteObjects.Count;
+                noteObjects.Add(this);
+            }
+
+            // Using `hitObject.StartTime` causes floating point error differences
+            double normalisedStartTime = StartTime * clockRate;
+
+            // Retrieve the timing point at the note's start time
+            TimingControlPoint currentControlPoint = controlPointInfo.TimingPointAt(normalisedStartTime);
+
+            // Calculate the slider velocity at the note's start time.
+            double currentSliderVelocity = calculateSliderVelocity(controlPointInfo, globalSliderVelocity, normalisedStartTime, clockRate);
+
+            EffectiveBPM = currentControlPoint.BPM * currentSliderVelocity;
+        }
+
         /// <summary>
         /// Calculates the slider velocity based on control point info and clock rate.
         /// </summary>
@@ -141,5 +190,13 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing
         public TaikoDifficultyHitObject? NextNote(int forwardsIndex) => noteDifficultyHitObjects.ElementAtOrDefault(NoteIndex + (forwardsIndex + 1));
 
         public double Interval => DeltaTime;
+
+        public override string ToString()
+        {
+            if (IsKat)
+                return "k";
+            else
+                return "d";
+        }
     }
 }

@@ -10,6 +10,7 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Mods;
+using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Scoring;
 using osu.Game.Rulesets.Taiko.Difficulty.Data;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing;
@@ -69,12 +70,52 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
         {
-            var difficultyHitObjects = new List<DifficultyHitObject>();
+            var difficultyHitObjectsTemp = new List<DifficultyHitObject>();
             var centreObjects = new List<TaikoDifficultyHitObject>();
             var rimObjects = new List<TaikoDifficultyHitObject>();
             var noteObjects = new List<TaikoDifficultyHitObject>();
 
             // Generate TaikoDifficultyHitObjects from the beatmap's hit objects.
+            for (int i = 2; i < beatmap.HitObjects.Count; i++)
+            {
+                difficultyHitObjectsTemp.Add(new TaikoDifficultyHitObject(
+                    beatmap.HitObjects[i],
+                    beatmap.HitObjects[i - 1],
+                    clockRate,
+                    difficultyHitObjectsTemp,
+                    centreObjects,
+                    rimObjects,
+                    noteObjects,
+                    difficultyHitObjectsTemp.Count,
+                    beatmap.ControlPointInfo,
+                    beatmap.Difficulty.SliderMultiplier
+                ));
+            }
+
+            centreObjects.Clear();
+            rimObjects.Clear();
+            noteObjects.Clear();
+
+            var difficultyHitObjects = new List<DifficultyHitObject>();
+
+            var normalizer = new DeltaTimeNormalizer(difficultyHitObjectsTemp.Cast<TaikoDifficultyHitObject>().ToList());
+            var normalizedDict = normalizer.GetNormalizedDeltaTime(5.0f);
+
+            var deltaTimes = new List<double>();
+    
+    
+            foreach (var key in normalizedDict.Keys)
+            {
+                /*
+                if (normalizedDict[key] == 87)
+                    normalizedDict[key] = 88;
+                if (normalizedDict[key] == 29.5)
+                    normalizedDict[key] = 29;
+                */
+                deltaTimes.Add(normalizedDict[key]);
+            }
+
+            var j = 0;
             for (int i = 2; i < beatmap.HitObjects.Count; i++)
             {
                 difficultyHitObjects.Add(new TaikoDifficultyHitObject(
@@ -87,15 +128,30 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
                     noteObjects,
                     difficultyHitObjects.Count,
                     beatmap.ControlPointInfo,
-                    beatmap.Difficulty.SliderMultiplier
+                    beatmap.Difficulty.SliderMultiplier,
+                    deltaTimes[j]
+
                 ));
+                j++;
             }
 
+            foreach (var item in difficultyHitObjects)
+            {
+                Console.WriteLine(item.DeltaTime);
+            }
+            //var normalizer = new DeltaTimeNormalizer(difficultyHitObjects.Cast<TaikoDifficultyHitObject>().ToList());
+            //normalizer.GetNormalizedDeltaTime(2.0f);
+            //normalizer.ModNormalizedDeltaTime(5);
+            /*foreach (var hitObject in difficultyHitObjects)
+            {
+                ((TaikoDifficultyHitObject)hitObject).RhythmData = new TaikoRhythmData((TaikoDifficultyHitObject)hitObject);
+            }
+
+            */
             HitWindows hitWindows = new TaikoHitWindows();
             hitWindows.SetDifficulty(beatmap.Difficulty.OverallDifficulty);
-            PatternInterpreter interpreter = new PatternInterpreter(noteObjects, hitWindows.WindowFor(HitResult.Great) / clockRate * 2);
-
-            PatternDebugUtils.PrintPatterns(interpreter, noteObjects);
+            //PatternInterpreter interpreter = new PatternInterpreter(noteObjects, hitWindows.WindowFor(HitResult.Great) / clockRate * 2);
+            //PatternDebugUtils.PrintPatterns(interpreter,noteObjects);
 
             TaikoColourDifficultyPreprocessor.ProcessAndAssign(difficultyHitObjects);
             TaikoRhythmDifficultyPreprocessor.ProcessAndAssign(noteObjects);

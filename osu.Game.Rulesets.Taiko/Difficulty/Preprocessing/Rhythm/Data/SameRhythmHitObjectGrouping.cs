@@ -49,7 +49,14 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Rhythm.Data
             HitObjects = hitObjects;
 
             // Calculate the average interval between hitobjects, or null if there are fewer than two
-            HitObjectInterval = HitObjects.Count < 2 ? null : Duration / (HitObjects.Count - 1);
+            var duration = 0d;
+            for (int i = 1; i < HitObjects.Count; i++)
+            {
+                duration += HitObjects[i].DeltaTime;
+            }
+
+            
+            HitObjectInterval = HitObjects.Count < 2 ? null : duration / (HitObjects.Count - 1);
 
             // Calculate the ratio between this group's interval and the previous group's interval
             HitObjectIntervalRatio = Previous?.HitObjectInterval != null && HitObjectInterval != null
@@ -58,6 +65,17 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Rhythm.Data
 
             // Calculate the interval from the previous group's start time
             Interval = Previous != null ? StartTime - Previous.StartTime : double.PositiveInfinity;
+        }
+
+        public override string ToString()
+        {
+            string str = "";
+            foreach (var hitObject in HitObjects)
+            {
+                str += hitObject.ToString();
+            }
+
+            return $"[{str}] Interval: {HitObjectInterval}";
         }
     }
 }

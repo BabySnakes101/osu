@@ -33,7 +33,7 @@ namespace osu.Game.Rulesets.Difficulty.Preprocessing
         /// <summary>
         /// Amount of time elapsed between <see cref="BaseObject"/> and <see cref="LastObject"/>, adjusted by clockrate.
         /// </summary>
-        public readonly double DeltaTime;
+        public double DeltaTime;
 
         /// <summary>
         /// Clockrate adjusted start time of <see cref="BaseObject"/>.
@@ -62,6 +62,18 @@ namespace osu.Game.Rulesets.Difficulty.Preprocessing
             DeltaTime = (hitObject.StartTime - lastObject.StartTime) / clockRate;
             StartTime = hitObject.StartTime / clockRate;
             EndTime = hitObject.GetEndTime() / clockRate;
+        }
+        public DifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, int index, double deltaTime)
+        {
+            difficultyHitObjects = objects;
+            Index = index;
+            BaseObject = hitObject;
+            LastObject = lastObject;
+            DeltaTime = (hitObject.StartTime - lastObject.StartTime) / clockRate;
+            StartTime = hitObject.StartTime / clockRate;
+            EndTime = hitObject.GetEndTime() / clockRate;
+
+            DeltaTime = deltaTime;
         }
 
         public DifficultyHitObject Previous(int backwardsIndex)

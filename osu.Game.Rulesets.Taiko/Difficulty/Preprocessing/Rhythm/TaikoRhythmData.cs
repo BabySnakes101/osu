@@ -49,7 +49,8 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Rhythm
 
             double actualRatio = current.DeltaTime / previous.DeltaTime;
             double closestRatio = common_ratios.MinBy(r => Math.Abs(r - actualRatio));
-
+            //Console.WriteLine($"ActualRatio:  {actualRatio} closestRatio: {closestRatio}");
+            //Console.WriteLine($"DeltaTime:  {current.DeltaTime}");
             Ratio = closestRatio;
         }
 
@@ -75,5 +76,10 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Rhythm
             5.0 / 4,
             4.0 / 5
         ];
+
+        public override string ToString()
+        {
+            return $"{Ratio} {SameRhythmGroupedHitObjects.Duration} {SamePatternsGroupedHitObjects.AllHitObjects.Count()}";
+        }
     }
 }
