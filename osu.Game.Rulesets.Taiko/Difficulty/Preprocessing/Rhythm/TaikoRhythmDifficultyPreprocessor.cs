@@ -10,9 +10,9 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Rhythm
 {
     public static class TaikoRhythmDifficultyPreprocessor
     {
-        public static void ProcessAndAssign(List<TaikoDifficultyHitObject> hitObjects)
+        public static void ProcessAndAssign(List<TaikoDifficultyHitObject> hitObjects, DeltaTimeNormaliser normaliser)
         {
-            var rhythmGroups = createSameRhythmGroupedHitObjects(hitObjects);
+            var rhythmGroups = createSameRhythmGroupedHitObjects(hitObjects, normaliser);
 
             foreach (var rhythmGroup in rhythmGroups)
             {
@@ -29,12 +29,12 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Rhythm
             }
         }
 
-        private static List<SameRhythmHitObjectGrouping> createSameRhythmGroupedHitObjects(List<TaikoDifficultyHitObject> hitObjects)
+        private static List<SameRhythmHitObjectGrouping> createSameRhythmGroupedHitObjects(List<TaikoDifficultyHitObject> hitObjects, DeltaTimeNormaliser normaliser)
         {
             var rhythmGroups = new List<SameRhythmHitObjectGrouping>();
 
             foreach (var grouped in IntervalGroupingUtils.GroupByInterval(hitObjects))
-                rhythmGroups.Add(new SameRhythmHitObjectGrouping(rhythmGroups.LastOrDefault(), grouped));
+                rhythmGroups.Add(new SameRhythmHitObjectGrouping(rhythmGroups.LastOrDefault(), grouped, normaliser));
 
             return rhythmGroups;
         }

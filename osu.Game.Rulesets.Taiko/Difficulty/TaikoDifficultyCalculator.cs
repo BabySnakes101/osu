@@ -15,6 +15,7 @@ using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Colour;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Rhythm;
 using osu.Game.Rulesets.Taiko.Difficulty.Skills;
+using osu.Game.Rulesets.Taiko.Difficulty.Utils;
 using osu.Game.Rulesets.Taiko.Mods;
 using osu.Game.Rulesets.Taiko.Scoring;
 
@@ -88,9 +89,9 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
                     beatmap.Difficulty.SliderMultiplier
                 ));
             }
-
+            DeltaTimeNormaliser normaliser = new DeltaTimeNormaliser(difficultyHitObjects.Cast<TaikoDifficultyHitObject>().ToList(), 4.0f);
             TaikoColourDifficultyPreprocessor.ProcessAndAssign(difficultyHitObjects);
-            TaikoRhythmDifficultyPreprocessor.ProcessAndAssign(noteObjects);
+            TaikoRhythmDifficultyPreprocessor.ProcessAndAssign(noteObjects, normaliser);
 
             return difficultyHitObjects;
         }
